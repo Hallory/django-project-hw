@@ -8,6 +8,7 @@ STATUS_CHOICES = [
     ("done", "Done"),
 ]
 
+
 class Task(models.Model):
     title = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -19,16 +20,16 @@ class Task(models.Model):
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
     created_date = models.DateField(auto_now_add=True)
-    
 
     def __str__(self):
         return self.title
-    
+
     class Meta:
         db_table = "task_manager_task"
         verbose_name = "Task"
         verbose_name_plural = "Tasks"
         ordering = ["-created_at"]
+
 
 class SubTask(models.Model):
     title = models.CharField(max_length=255, unique=True)
@@ -40,17 +41,16 @@ class SubTask(models.Model):
     )
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
 
     def __str__(self):
         return self.title
-    
+
     class Meta:
         db_table = "task_manager_subtask"
         verbose_name = "SubTask"
         verbose_name_plural = "SubTasks"
         ordering = ["-created_at"]
-    
+
 
 class Category(models.Model):
     name = models.CharField(max_length=255, unique=True)
