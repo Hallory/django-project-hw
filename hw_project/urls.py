@@ -1,11 +1,16 @@
 from django.urls import path
 
-from .views import get_statistics, get_task_by_id, tasks
-from hw_project.views import SubTaskListCreateView,SubTaskDetailUpdateDeleteView
+from .views import (
+    TaskListCreateView,
+    TaskDetailView,
+    SubTaskListCreateView,
+    SubTaskDetailUpdateDeleteView,
+    get_statistics,
+)
 
 urlpatterns = [
-    path("tasks/", tasks),
-    path("task/<int:task_id>/", get_task_by_id),
+    path("tasks/", TaskListCreateView.as_view()),
+    path("tasks/<int:pk>/", TaskDetailView.as_view()),
     path("statistics/", get_statistics),
     path("subtasks/", SubTaskListCreateView.as_view()),
     path('subtasks/<int:pk>/', SubTaskDetailUpdateDeleteView.as_view()),
