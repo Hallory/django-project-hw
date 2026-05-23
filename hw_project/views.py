@@ -1,17 +1,16 @@
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import filters, generics, viewsets
-from rest_framework.decorators import api_view, action
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
 from hw_project.models import Category, SubTask, Task
 
 from .serializers import (
+    CategorySerializer,
     SubTaskCreateSerializer,
     TaskCreateSerializer,
     TaskDetailSerializer,
-    CategorySerializer,
 )
 
 weekdays = {
@@ -25,14 +24,9 @@ weekdays = {
 }
 
 
-class SubTaskPagination(PageNumberPagination):
-    page_size = 5
-
-
 class SubTaskListCreateView(generics.ListCreateAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
-    pagination_class = SubTaskPagination
 
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "description"]
@@ -94,16 +88,15 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
-    serializer_class =  CategorySerializer
-    
+    serializer_class = CategorySerializer
+
     @action(detail=True, methods=["get"])
     def count_tasks(self, request, pk=None):
         category = self.get_object()
-        
+
         task_count = Task.objects.filter(categories=category).count()
-        
+
         return Response({"task_count": task_count, "category": category.name})
-    
 
 
 @api_view(["GET"])

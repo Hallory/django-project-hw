@@ -28,6 +28,7 @@ class Category(models.Model):
         db_table = "task_manager_category"
         verbose_name = "Category"
         verbose_name_plural = "Categories"
+        ordering = ["id"]
 
     def __str__(self):
         return self.name
