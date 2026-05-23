@@ -2,10 +2,12 @@ from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import action, api_view
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from hw_project.models import Category, SubTask, Task
 
+from .permissions import IsAuthorOrReadOnly, IsStaffOrReadOnly
 from .serializers import (
     CategorySerializer,
     SubTaskCreateSerializer,
@@ -25,6 +27,7 @@ weekdays = {
 
 
 class SubTaskListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
 
@@ -32,6 +35,9 @@ class SubTaskListCreateView(generics.ListCreateAPIView):
     search_fields = ["title", "description"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_queryset(self):
         queryset = SubTask.objects.all()
@@ -52,17 +58,22 @@ class SubTaskListCreateView(generics.ListCreateAPIView):
 
 
 class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthorOrReadOnly]
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Task.objects.all()
     serializer_class = TaskCreateSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ["title", "description"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_queryset(self):
         queryset = Task.objects.all()
@@ -82,11 +93,13 @@ class TaskListCreateView(generics.ListCreateAPIView):
 
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthorOrReadOnly]
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsStaffOrReadOnly]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
