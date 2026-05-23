@@ -1,28 +1,29 @@
 from django.db.models import Count, Q
 from django.utils import timezone
-from rest_framework.decorators import api_view
+from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import api_view, action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
-from rest_framework import generics, filters
 
-from hw_project.models import SubTask, Task
+from hw_project.models import Category, SubTask, Task
 
 from .serializers import (
     SubTaskCreateSerializer,
-    SubTaskSerializer,
     TaskCreateSerializer,
     TaskDetailSerializer,
-    TaskSerializer,
+    CategorySerializer,
 )
+
 weekdays = {
-        "monday": 1,
-        "tuesday": 2,
-        "wednesday": 3,
-        "thursday": 4,
-        "friday": 5,
-        "saturday": 6,
-        "sunday": 7,
-    }
+    "monday": 1,
+    "tuesday": 2,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 5,
+    "saturday": 6,
+    "sunday": 7,
+}
+
 
 class SubTaskPagination(PageNumberPagination):
     page_size = 5
@@ -49,17 +50,16 @@ class SubTaskListCreateView(generics.ListCreateAPIView):
 
         if deadline:
             queryset = queryset.filter(deadline__date=deadline)
-            
+
         if task_id:
             queryset = queryset.filter(task_id=task_id)
 
         return queryset
-    
+
 
 class SubTaskDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskCreateSerializer
-
 
 
 class TaskListCreateView(generics.ListCreateAPIView):
@@ -69,26 +69,41 @@ class TaskListCreateView(generics.ListCreateAPIView):
     search_fields = ["title", "description"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
-    
+
     def get_queryset(self):
         queryset = Task.objects.all()
-        
+
         status_value = self.request.query_params.get("status")
         deadline = self.request.query_params.get("deadline")
-        
+
         if status_value:
             queryset = queryset.filter(status=status_value)
 
         if deadline:
-            queryset = queryset.filter(deadline__date=deadline) # deadline__date__lte=deadline
-            
+            queryset = queryset.filter(
+                deadline__date=deadline
+            )  # deadline__date__lte=deadline
+
         return queryset
+
 
 class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskDetailSerializer
-    
 
+
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class =  CategorySerializer
+    
+    @action(detail=True, methods=["get"])
+    def count_tasks(self, request, pk=None):
+        category = self.get_object()
+        
+        task_count = Task.objects.filter(categories=category).count()
+        
+        return Response({"task_count": task_count, "category": category.name})
+    
 
 
 @api_view(["GET"])

@@ -58,3 +58,9 @@ class CategoryCreateSerializer(serializers.ModelSerializer):
         instance.name = new_name
         instance.save()
         return instance
+    
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ["name", "id","is_deleted", "deleted_at"]
+        read_only_fields = ["is_deleted", "deleted_at"]

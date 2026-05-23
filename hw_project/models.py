@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+
 
 STATUS_CHOICES = [
     ("new", "New"),
@@ -8,7 +10,33 @@ STATUS_CHOICES = [
     ("done", "Done"),
 ]
 
+class CategoryManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
 
+class Category(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True)
+    
+    objects = CategoryManager()
+    
+    all_objects = models.Manager()
+
+    class Meta:
+        db_table = "task_manager_category"
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+    def __str__(self):
+        return self.name
+    
+    def delete(self, using = None, keep_parents = False):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save(using = using)
+        
 class Task(models.Model):
     title = models.CharField(max_length=255, unique=True)
     description = models.TextField()
@@ -52,13 +80,3 @@ class SubTask(models.Model):
         ordering = ["-created_at"]
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-
-    class Meta:
-        db_table = "task_manager_category"
-        verbose_name = "Category"
-        verbose_name_plural = "Categories"
-
-    def __str__(self):
-        return self.name
