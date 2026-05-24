@@ -10,3 +10,5 @@ __pycache__/
 
 # Django / SQLite
 db.sqlite3
+
+/logs
