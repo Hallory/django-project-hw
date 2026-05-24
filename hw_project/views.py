@@ -1,8 +1,8 @@
 from django.db.models import Count, Q
 from django.utils import timezone
 from rest_framework import filters, generics, viewsets
-from rest_framework.decorators import action, api_view
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.response import Response
 
 from hw_project.models import Category, SubTask, Task
@@ -25,6 +25,19 @@ weekdays = {
     "sunday": 7,
 }
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_tasks(request):
+    tasks = Task.objects.filter(author=request.user)
+    serializer = TaskDetailSerializer(tasks, many=True)
+    return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_subtasks(request):
+    subtasks = SubTask.objects.filter(author=request.user)
+    serializer = SubTaskCreateSerializer(subtasks, many=True)
+    return Response(serializer.data)
 
 class SubTaskListCreateView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
